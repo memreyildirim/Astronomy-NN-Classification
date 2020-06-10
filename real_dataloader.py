@@ -6,6 +6,8 @@ import sys
 from PIL import Image
 import pdb
 from torch.utils.data import DataLoader
+from torchvision import transforms
+
 
 class IMDBWIKI(torch.utils.data.Dataset):
 
@@ -45,4 +47,5 @@ class IMDBWIKI(torch.utils.data.Dataset):
 
 dats=IMDBWIKI('astrdataset')
 tsloader = torch.utils.data.DataLoader(dats)
-pdb.set_trace()
+
+
