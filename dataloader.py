@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 
-class IMDBWIKI(torch.utils.data.Dataset):
+class AstroLoader(torch.utils.data.Dataset):
 
     def __init__(self, root, train=True, transform=None, dp=False, seed=0):
         random.seed(seed)
@@ -45,7 +45,7 @@ class IMDBWIKI(torch.utils.data.Dataset):
         return image, label
 
 
-dats=IMDBWIKI('astrdataset')
+dats=AstroLoader('astrdataset')
 tsloader = torch.utils.data.DataLoader(dats)
 
-
+print(dats)

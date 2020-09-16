@@ -24,7 +24,7 @@ import torchvision
 import numpy as np
 
 
-from real_dataloader import IMDBWIKI
+from dataloader import AstroLoader
 from torchvision import transforms
 from torch.utils.tensorboard import SummaryWriter
 from PIL import Image, ImageDraw
@@ -43,9 +43,11 @@ def main(args):
         transforms.Normalize((0.485,0.456,0.406), (0.229,0.224,0.225))
     ])
 
-    train_dataset = IMDBWIKI(root=args['--data'], transform=image_transform)
-    validation_dataset = IMDBWIKI(root=args['--data'], train=False, transform=image_transform)
-    display_dataset = IMDBWIKI(root=args['--data'], train=False, dp=True)
+    train_dataset = AstroLoader(root=args['--data'], transform=image_transform)
+    validation_dataset = AstroLoader(root=args['--data'], train=False, transform=image_transform)
+    display_dataset = AstroLoader(root=args['--data'], train=False, dp=True)
+
+
 
     train_dataloader = DataLoader(
         train_dataset,
@@ -59,6 +61,9 @@ def main(args):
         batch_size=int(args['--batch_size']), 
         num_workers=int(args['--num_works'])
     )
+
+
+
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     model = torch.hub.load('pytorch/vision:v0.6.0', 'squeezenet1_0', pretrained=True)
 
@@ -91,7 +96,6 @@ def main(args):
         global_step = train(train_dataloader, model, loss_fn, optimizer, device, writer, epoch, global_step, print_freq)
         validate(model, validation_dataloader, device, writer, epoch, global_step)
 
-        #show_image(display_dataset, model, image_transform, device, writer, global_step)
         torch.save({
             'model':model.state_dict(),
             'optimizer':optimizer.state_dict(),
@@ -212,45 +216,7 @@ class ProgressMeter(object):
         return '[' + fmt + '/' + fmt.format(num_batches) + ']'
 
 
-"""
-def show_image(dataset, model, transform, device, writer, global_step):
-    model.eval()
-    for i in range(len(dataset)):
-        image, (gender, age) = dataset[i]
-        pred = model(torch.unsqueeze(transform(image).to(device=device), 0))[0]
-        gender_pred, age_pred = float(pred[0].item()), float(pred[1].item())
 
-        age *= 100.0
-        age_pred *= 100.0
-
-        if gender_pred < 0.5:
-            gender_pred = 0.0
-        else:
-            gender_pred = 1.0
-
-        image = transforms.functional.resize(image, 64)
-        draw = ImageDraw.Draw(image)
-        
-        draw.text(
-            (5, 5),
-            text=("gp: {0:d}\ng: {1:d}\nap: {2:d}\na: {3:d}".format(
-                int(gender_pred),
-                int(gender),
-                int(age_pred),
-                int(age))), 
-            align ="left"
-        )
-
-        image = np.transpose(
-             np.array(image),
-             (2, 0, 1)
-        )
-        writer.add_image(
-            'Image/image_{}'.format(i), 
-           image, 
-           global_step
-        )
-"""
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
     with torch.no_grad():
